@@ -20,10 +20,18 @@ do
 done
 
 if [ ${#all_directories[@]} -eq 0 ]; then
-    echo "Nothing to delete"
+    echo "No volumes to delete."
 else
     volume_number=${#all_directories[@]}
-    echo "Deleting..." | tee $log
+    echo "Deleting volumes..." | tee $log
     cd /var/lib/docker/volumes && rm -rfv ${all_directories[@]} >> $log
     echo "Done. $volume_number deleted" | tee -a $log	
+fi
+
+if [ $(docker images -f "dangling=true" -q | wc -l) -eq 0 ]; then
+    echo "No unused images to delete."
+else
+    echo "Deleting unused images..."
+    docker rmi $(docker images -f "dangling=true" -q) | tee -a $log
+    echo "Done." | tee -a $log
 fi
