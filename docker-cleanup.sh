@@ -24,8 +24,11 @@ if [ ${#all_directories[@]} -eq 0 ]; then
 else
     volume_number=${#all_directories[@]}
     echo "Deleting volumes..." | tee $log
-    cd /var/lib/docker/volumes && rm -rfv ${all_directories[@]} >> $log
-    echo "Done. $volume_number deleted" | tee -a $log	
+    images_size=$(du -sch ${all_directories[@]} | tail -1 | awk '{print $1}')
+    rm -rfv /var/lib/docker/volumes/${all_directories[@]} >> $log
+    echo "Done. $volume_number deleted" | tee -a $log
+    printf "\nDisk space has been freed up by $images_size"
+
 fi
 
 if [ $(docker images -f "dangling=true" -q | wc -l) -eq 0 ]; then
